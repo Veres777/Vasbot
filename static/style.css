@@ -263,3 +263,21 @@ footer {
     display: inline-block;
 }
 
+.telegram-button {
+    padding: 12px 24px;
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.telegram-button:hover {
+    background-color: #0071aa;
+}
+
+

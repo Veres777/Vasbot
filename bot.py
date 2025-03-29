@@ -65,9 +65,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
     await update.message.reply_text(message_text, parse_mode=ParseMode.MARKDOWN)
     await update.message.reply_text(
-    "👋 Vítej! Pro přístup k prémiovým tipům se zaregistruj na webu:\n\n"
-    "🌐 https://vasbot.cz/registrace"
-)
+        "👋 Vítej! Pro přístup k prémiovým tipům se zaregistruj na webu:\n\n"
+        "[🌐 Otevřít registraci](https://vasbot.cz/registrace)",
+        parse_mode=ParseMode.MARKDOWN
+    )
 
 
 
