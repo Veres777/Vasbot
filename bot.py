@@ -64,12 +64,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "• **/debug** – *Ukáže přehled zápasů, které prošly filtrem.*"
     )
     await update.message.reply_text(message_text, parse_mode=ParseMode.MARKDOWN)
+    await update.message.reply_text(
+    "👋 Vítej! Pro přístup k prémiovým tipům se zaregistruj na webu:\n\n"
+    "🌐 https://vasbot.cz/registrace"
+)
+
 
 
 async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     telegram_id = update.effective_user.id
 
-    if telegram_id != OWNER_ID and not is_registered_user(telegram_id):
+    if telegram_id != OWNER_ID and not is_registered(telegram_id):
+
         await update.message.reply_text(
             "⛔ Tento příkaz je dostupný pouze pro registrované uživatele.\n"
             "Zaregistruj se na webu pro přístup k prémiovým tipům."
@@ -430,6 +436,14 @@ def run_bot():
 
     print("✅ Telegram bot běží...")
     application.run_polling()
+
+    def is_registered(telegram_id):
+        try:
+            response = requests.get(f"https://vasbot.cz/api/check_user?id={telegram_id}", timeout=5)
+            data = response.json()
+            return data["status"] == "ok"
+        except:
+            return False
 
 # Volitelné spuštění samostatně
 if __name__ == "__main__":

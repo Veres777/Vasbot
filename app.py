@@ -4,7 +4,8 @@ import threading
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
 from forms import RegistrationForm  
-from models import db, User  
+from models import db, User 
+from flask import jsonify, request 
 from dotenv import load_dotenv
 from bot import run_bot  # Přidáno pro spuštění bota
 
@@ -131,3 +132,12 @@ if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
+
+@app.route('/api/check_user')
+def check_user():
+    telegram_id = request.args.get('id')
+    user = User.query.filter_by(telegram_id=telegram_id).first()
+    if user:
+        return jsonify({"status": "ok", "jmeno": user.jmeno})
+    else:
+        return jsonify({"status": "not_found"})    
