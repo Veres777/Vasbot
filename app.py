@@ -1,10 +1,12 @@
 import os
 import csv
+import threading
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, make_response
 from forms import RegistrationForm  
 from models import db, User  
 from dotenv import load_dotenv
+from bot import run_bot  # Přidáno pro spuštění bota
 
 load_dotenv()
 
@@ -115,6 +117,12 @@ def check_user():
         return {"registered": False}
 
 
+# ✅ Spuštění Flasku + Telegram bota zároveň
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
 
+    threading.Thread(target=run_bot, daemon=True).start()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
