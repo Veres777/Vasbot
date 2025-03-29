@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrace</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="container">
+        <h1>Registrace uživatele</h1>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <label>Jméno:</label>
+            {{ form.jmeno(class="form-control") }}
+            {% for error in form.jmeno.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+
+            <label>Email:</label>
+            {{ form.email(class="form-control") }}
+            {% for error in form.email.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+
+            <label for="telegram_id">Telegram ID:
+                <button type="button" class="info-btn" onclick="togglePopup()">❓</button>
+            </label>
+            {{ form.telegram_id(class="form-control", id="telegram_id") }}
+            {% for error in form.telegram_id.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            
+            <!-- Informační okno -->
+            <div id="popup" class="popup">
+                <div class="popup-content">
+                    <span class="close" onclick="togglePopup()">&times;</span>
+                    <h3>Jak zjistit svůj Telegram ID</h3>
+                    <ol>
+                        <li>Otevři aplikaci Telegram</li>
+                        <li>Vyhledej <strong>@userinfobot</strong></li>
+                        <li>Pošli mu zprávu (např. <em>ahoj</em>)</li>
+                        <li>Bot ti odpoví zprávou: <br><em>Your Telegram ID: 123456789</em></li>
+                        <li>Zkopíruj toto číslo a vlož ho sem do formuláře</li>
+                    </ol>
+                </div>
+            </div>
+            
+            
+            
+
+            <label>Datum narození:</label>
+            {{ form.datum_narozeni(class="form-control") }}
+            {% for error in form.datum_narozeni.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+
+            <div class="submit">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+    <script>
+        function togglePopup() {
+            var popup = document.getElementById("popup");
+            popup.style.display = popup.style.display === "block" ? "none" : "block";
+        }
+    
+        // Zavření kliknutím mimo popup
+        window.onclick = function(event) {
+            var popup = document.getElementById("popup");
+            if (event.target === popup) {
+                popup.style.display = "none";
+            }
+        }
+    </script>
+    
+</body>
+</html>

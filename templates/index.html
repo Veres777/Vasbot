@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>BetBot – Chytrý tiketový asistent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-content">
+            <h1>🎯 BetBot</h1>
+            <p>Chytrý Telegram bot, který ti každý den navrhne nejvýhodnější sázkové tikety s pravděpodobností výhry nad 70 %.</p>
+            <a href="{{ url_for('registrace') }}" class="btn-large">Zaregistrovat se zdarma</a>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="feature">
+            <h2>⚡ Automatické tikety</h2>
+            <p>Bot analyzuje kurzy a vybírá ty s nejvyšší šancí na výhru.</p>
+        </div>
+        <div class="feature">
+            <h2>📊 Přesná data</h2>
+            <p>Využívá profesionální sportovní API a počítá reálnou pravděpodobnost výhry.</p>
+        </div>
+        <div class="feature">
+            <h2>💬 Vše v Telegramu</h2>
+            <p>Nemusíš instalovat žádné aplikace. Stačí kliknout a začít sázet chytře.</p>
+        </div>
+    </section>
+
+    <section class="preview">
+        <h2>🧠 Ukázka zprávy od bota</h2>
+        <div class="bot-preview">
+            <pre>
+🎟 Váš tiket:
+
+Sport: Fotbal
+Zápas: Real Madrid vs Barcelona
+Čas: 30.03.2025 21:00
+Doporučená sázka: Real Madrid @ 1.90
+Pravděpodobnost výhry: 74.32 %
+
+📊 Celkový kurz: 1.90
+📈 Pravděpodobnost výhry tiketu: 74.32 %
+            </pre>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 BetBot.cz | Vytvořeno s ❤️ Averianov Serghei</p>
+    </footer>
+</body>
+</html>

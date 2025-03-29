@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin sekce</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        {% if not session.admin_logged_in %}
+            <h1>🔐 Admin přihlášení</h1>
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            <form method="POST">
+                <label>Email:</label>
+                <input type="email" name="email" class="form-control" required>
+
+                <label>Heslo:</label>
+                <input type="password" name="password" class="form-control" required>
+
+                <div class="submit">
+                    <button type="submit" class="btn btn-primary">Přihlásit se</button>
+                </div>
+            </form>
+        {% else %}
+            <h1>📋 Registrovaní uživatelé</h1>
+            <p style="text-align:right;"><a href="{{ url_for('logout') }}">Odhlásit se</a></p>
+            {% if users %}
+            <p>
+                <a href="{{ url_for('export') }}" class="btn btn-primary">📥 Exportovat do CSV</a>
+            </p>
+            
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Jméno</th>
+                            <th>Email</th>
+                            <th>Telegram ID</th>
+                            <th>Datum narození</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.jmeno }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.telegram_id }}</td>
+                                <td>{{ user.datum_narozeni.strftime('%d.%m.%Y') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Žádní uživatelé zatím nejsou zaregistrováni.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Platba</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>💳 Aktivace přístupu</h1>
+
+        <p>Děkujeme za registraci!</p>
+        <p>Tvůj Telegram ID: <strong>{{ telegram_id }}</strong></p>
+
+        <div class="payment-box">
+            <p>Pro získání přístupu k prémiovým tiketům prosím proveď platbu:</p>
+            
+            <!-- Zde může být QR kód -->
+            <img src="{{ url_for('static', filename='qr_placeholder.png') }}" alt="QR kód k platbě" class="qr">
+
+            <!-- Fiktivní tlačítko -->
+            <a href="#" class="btn btn-primary">Zaplatit přes PayPal</a>
+        </div>
+
+        <p class="note">Po zaplacení ti aktivujeme přístup v Telegramu.</p>
+    </div>
+</body>
+</html>
+
