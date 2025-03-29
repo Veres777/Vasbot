@@ -1,19 +1,26 @@
-from flask import Flask, render_template, request, redirect, session, url_for
-from forms import RegistrationForm
-from models import db, User
+import os
 import csv
-from flask import make_response
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session, make_response
+from forms import RegistrationForm  
+from models import db, User  
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "tajnyklic"
+app.secret_key = os.getenv("SECRET_KEY", "tajnyklic")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+# Připojení k databázi – PostgreSQL z Renderu nebo fallback na SQLite
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///instance/users.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db.init_app(app)
 
-# Přihlašovací údaje
-ADMIN_EMAIL = "spatial_traveller@proton.me"
-ADMIN_PASSWORD = "62583425AverMax"
+# Přihlašovací údaje pro admina
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "password123")
 
 with app.app_context():
     db.create_all()
@@ -22,6 +29,7 @@ with app.app_context():
 @app.route("/")
 def index():
     return render_template("index.html")
+
 
 @app.route("/registrace", methods=["GET", "POST"])
 def registrace():
@@ -43,7 +51,7 @@ def registrace():
 def platba():
     telegram_id = request.args.get("telegram_id")
     if not telegram_id:
-        telegram_id = "Neznámé ID"  # záloha, pokud náhodou chybí
+        telegram_id = "Neznámé ID"
     return render_template("platba.html", telegram_id=telegram_id)
 
 
@@ -54,8 +62,7 @@ def admin():
         password = request.form["password"]
         if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
-            return redirect(url_for("admin"))  # po přihlášení redirect
-
+            return redirect(url_for("admin"))
         return render_template("admin.html", error="Neplatný email nebo heslo")
 
     if not session.get("admin_logged_in"):
@@ -64,8 +71,6 @@ def admin():
     users = User.query.all()
     return render_template("admin.html", users=users)
 
-import csv
-from flask import make_response
 
 @app.route("/export")
 def export():
@@ -73,7 +78,6 @@ def export():
         return redirect(url_for("admin"))
 
     users = User.query.all()
-
     si = []
     header = ["ID", "Jméno", "Email", "Telegram ID", "Datum narození"]
     si.append(header)
@@ -93,11 +97,22 @@ def export():
     return response
 
 
-
 @app.route("/logout")
 def logout():
     session.pop("admin_logged_in", None)
     return redirect("/admin")
+
+
+@app.route("/check-user", methods=["POST"])
+def check_user():
+    data = request.get_json()
+    telegram_id = data.get("telegram_id")
+
+    user = User.query.filter_by(telegram_id=telegram_id).first()
+    if user:
+        return {"registered": True}
+    else:
+        return {"registered": False}
 
 
 if __name__ == "__main__":

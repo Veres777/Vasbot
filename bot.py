@@ -47,6 +47,11 @@ def is_registered_user(telegram_id):
     with flask_app.app_context():
         return User.query.filter_by(telegram_id=str(telegram_id)).first() is not None
 
+MAX_LENGTH = 4000  # Telegram limit je 4096 znaků, dáme rezervu
+
+async def send_long_message(update, message):
+    for i in range(0, len(message), MAX_LENGTH):
+        await update.message.reply_text(message[i:i+MAX_LENGTH], parse_mode="Markdown")
 
 # /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -382,7 +387,8 @@ async def tiket(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     win_probability = round((1 / total_odds) * 100, 2)
     
 
-    await update.message.reply_text(ticket_message, parse_mode=ParseMode.MARKDOWN)
+    await send_long_message(update, ticket_message)
+
 
 
 # Spuštění bota
@@ -411,8 +417,13 @@ async def stav(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "Zaregistruj se na webu pro získání přístupu."
         )
 
+def run_bot():
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    application.add_handler(CommandHandler("tiket", tiket))
+    application.run_polling()
 
+# Volitelné spuštění samostatně
 if __name__ == "__main__":
-    main()
+    run_bot()
 
 
