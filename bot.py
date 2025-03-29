@@ -417,9 +417,18 @@ async def stav(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "Zaregistruj se na webu pro získání přístupu."
         )
 
+
 def run_bot():
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("stav", stav))
+    application.add_handler(CommandHandler("premium", premium))
     application.add_handler(CommandHandler("tiket", tiket))
+    application.add_handler(CommandHandler("debug", debug))
+    application.add_handler(CommandHandler("nastaveni", nastaveni))
+
+    print("✅ Telegram bot běží...")
     application.run_polling()
 
 # Volitelné spuštění samostatně
