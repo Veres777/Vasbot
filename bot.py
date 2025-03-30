@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from dotenv import load_dotenv
+import random
 import sys
 from flask import Flask
 from models import db, User  # importujeme model User a přístup k DB
@@ -72,23 +73,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 
+from telegram.ext import CommandHandler
+from datetime import datetime, timezone
+import random
+
 async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    telegram_id = update.effective_user.id
-
-    if telegram_id != OWNER_ID and not is_registered(telegram_id):
-
-        await update.message.reply_text(
-            "⛔ Tento příkaz je dostupný pouze pro registrované uživatele.\n"
-            "Zaregistruj se na webu pro přístup k prémiovým tipům."
-        )
-        return
-
+    premium_tips = []
     now = datetime.now(timezone.utc)
-    today_start = now.replace(hour=0, minute=1, second=0, microsecond=0)
-    today_end = today_start + timedelta(days=1)
-
-    best_match = None
-    highest_prob = 0
 
     for sport_name, sport_key in SUPPORTED_SPORTS.items():
         for api_key in API_KEYS:
@@ -102,70 +93,53 @@ async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
             try:
                 response = requests.get(url, params=params, timeout=10)
-                if response.status_code != 200:
-                    continue
-
+                response.raise_for_status()
                 data = response.json()
-                if not data:
-                    continue
 
                 for match in data:
-                    commence_time = match.get("commence_time")
-                    if not commence_time:
+                    start_time = datetime.fromisoformat(match["commence_time"].replace("Z", "+00:00"))
+                    if start_time <= now:
                         continue
 
-                    start_time = datetime.fromisoformat(commence_time.replace("Z", "+00:00"))
-                    if not (today_start <= start_time <= today_end):
-                        continue
-
-                    home_team = match.get("home_team", "")
-                    away_team = match.get("away_team", "")
-                    league = match.get("sport_title", "Neznámá liga")
+                    home = match.get("home_team", "Neznámý tým")
+                    away = match.get("away_team", "Neznámý tým")
                     bookmakers = match.get("bookmakers", [])
                     if not bookmakers:
                         continue
 
                     outcomes = bookmakers[0].get("markets", [])[0].get("outcomes", [])
-                    if not outcomes:
-                        continue
+                    for outcome in outcomes:
+                        odds = outcome["price"]
+                        if 1.3 <= odds <= 2.5:
+                            probability = round((1 / odds) * 100, 2)
+                            if 65 <= probability <= 85:
+                                premium_tips.append({
+                                    "sport": sport_name,
+                                    "home": home,
+                                    "away": away,
+                                    "team": outcome["name"],
+                                    "odds": odds,
+                                    "probability": probability,
+                                    "time": start_time.strftime("%d.%m.%Y %H:%M")
+                                })
 
-                    best_outcome = min(outcomes, key=lambda x: x["price"])
-                    odds = best_outcome["price"]
-                    probability = round((1 / odds) * 100, 2)
+            except requests.exceptions.RequestException as e:
+                await update.message.reply_text(f"Chyba při načítání dat pro {sport_name}: {e}")
+                break
 
-                    if probability > highest_prob:
-                        highest_prob = probability
-                        best_match = {
-                            "sport": sport_name,
-                            "league": league,
-                            "home": home_team,
-                            "away": away_team,
-                            "time": start_time,
-                            "team": best_outcome["name"],
-                            "odds": odds,
-                            "probability": probability
-                        }
-
-                break  # použij první funkční klíč
-
-            except requests.exceptions.RequestException:
-                continue
-
-    if best_match:
-        prague_time = best_match["time"].astimezone(pytz.timezone("Europe/Prague"))
-        match_time = prague_time.strftime("%d.%m.%Y %H:%M")
-
-        premium_message = (
-            "🎯 *Prémiový tip dne:*\n\n"
-            f"🏆 *{best_match['sport']} – {best_match['league']}*\n"
-            f"👉 {best_match['home']} vs. {best_match['away']}\n"
-            f"🕒 Čas: {match_time}\n"
-            f"💡 Doporučená sázka: *{best_match['team']}* @ {best_match['odds']}\n"
-            f"📈 Pravděpodobnost výhry: *{best_match['probability']} %*"
+    if premium_tips:
+        best_match = random.choice(premium_tips)
+        message = (
+            "💎 *Prémiový tip dne:*\n\n"
+            f"🏟 *Sport:* {best_match['sport']}\n"
+            f"⚽ *Zápas:* {best_match['home']} vs {best_match['away']}\n"
+            f"⏰ *Čas:* {best_match['time']}\n"
+            f"✅ *Doporučená sázka:* {best_match['team']} @ {best_match['odds']}\n"
+            f"📈 *Pravděpodobnost výhry:* {best_match['probability']} %"
         )
-        await update.message.reply_text(premium_message, parse_mode=ParseMode.MARKDOWN)
+        await update.message.reply_text(message, parse_mode="Markdown")
     else:
-        await update.message.reply_text("❌ Dnes se nepodařilo najít žádný vhodný prémiový zápas.")
+        await update.message.reply_text("Dnes nebyl nalezen žádný vhodný prémiový zápas.")
 
 
 
